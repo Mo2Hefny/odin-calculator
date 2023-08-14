@@ -1,0 +1,30 @@
+:root {
+  --h1: 2rem;
+  --h2: 1.4rem;
+  --p: 18px;
+  --small: 14px;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+main {
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  grid-template-rows: 1fr 2fr;
+}
+
+main:nth-child(2) {
+  grid-row-start: 1 2;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
