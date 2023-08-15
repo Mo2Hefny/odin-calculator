@@ -41,11 +41,16 @@ main {
   grid-column: 2;
   grid-row-start: 1;
   grid-row-end: span 2;
+  overflow-y:scroll;
+}
+
+#history::-webkit-scrollbar {
+  display: none;
 }
 
 .section {
   position: relative;
-  padding: 0.5em 1em;
+  padding: 0.5em 1em 1em;
   text-align: right;
 }
 
@@ -68,11 +73,11 @@ main {
   flex-direction: column;
   justify-content: center;
   text-align: right;
-  padding-right: 1rem;
+  padding-right: 2rem;
 }
 
 .number {
-  font-size: 3em;
+  font-size: 4em;
 }
 
 .equation {
@@ -88,7 +93,7 @@ main {
 .num-btn,
 .op-btn {
   color: var(--accent);
-  font-size: var(--p);
+  font-size: var(--h2);
   border-radius: 4px;
 }
 
