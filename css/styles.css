@@ -1,4 +1,11 @@
 :root {
+  --text: #e5edf5;
+  --text-contrast: #a6a6a6;
+  --background: #090f16;
+  --primary: #F38064;
+  --secondary: rgb(50, 50, 50);
+  --secondary-light: rgb(59, 59, 59);
+  --accent: #f1f5f9;
   --h1: 2rem;
   --h2: 1.4rem;
   --p: 18px;
@@ -11,20 +18,96 @@
   box-sizing: border-box;
 }
 
+button {
+  border: none;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--background);
+  color: var(--text);
+}
+
 main {
+  padding: 2px;
   width: 100%;
   height: 100vh;
   display: grid;
-  grid-template-columns: 3fr 1fr;
-  grid-template-rows: 1fr 2fr;
+  grid-template-columns: 75% 25%;
+  grid-template-rows: 280px calc(100% - 280px);
 }
 
-main:nth-child(2) {
-  grid-row-start: 1 2;
+#history {
+  grid-column: 2;
+  grid-row-start: 1;
+  grid-row-end: span 2;
+}
+
+.section {
+  position: relative;
+  padding: 0.5em 1em;
+  text-align: right;
+}
+
+.section::before {
+  right: 0%;
+  margin-top: -0.5em;
+  position: absolute;
+  content: "";
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary);
+}
+
+.section > .number {
+  font-size: var(--h1);
+}
+
+#screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: right;
+  padding-right: 1rem;
+}
+
+.number {
+  font-size: 3em;
+}
+
+.equation {
+  font-size: var(--h2);
+  color: var(--text-contrast);
 }
 
 .buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 2px;
+}
+.num-btn,
+.op-btn {
+  color: var(--accent);
+  font-size: var(--p);
+  border-radius: 4px;
+}
+
+.num-btn,
+.op-btn:hover {
+  background-color: var(--secondary-light);
+}
+
+.num-btn:hover,
+.op-btn {
+  background-color: var(--secondary);
+}
+
+.primary-btn {
+  position: relative;
+  background-color: var(--primary);
+  color: var(--background);
+}
+
+.primary-btn:hover {
+  background-color: #f38164cc;
 }
