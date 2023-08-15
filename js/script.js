@@ -6,6 +6,8 @@ const buttons = document.querySelector(".buttons");
 const screenNumber = document.getElementById("screen-number");
 const screenEquation = document.getElementById("screen-equation");
 let equation = [0];
+let equationText = ["0"];
+let error = false;
 let selectedOperator = "";
 let editingNumber = 0;
 let decimal = false;
@@ -20,6 +22,7 @@ console.log(screenNumber.textContent);
 
 function handleUserInput(event) {
   const button = event.target.closest("button");
+  if (error) { clearAll(); }
   if (button.classList.contains("num-btn")) {
     handleNumberChange(button);
   }
@@ -38,7 +41,11 @@ function handleNumberChange(button) {
   }
   let number = parseFloat(screenNumber.textContent.replace(/,/g, ""));
   
-  if (ID == "switch") number = -number;
+  if (ID == "switch" && number) { 
+    number = -number;
+    equation[editingNumber] = number;
+    equation[editingNumber] = number.toLocaleString("en-US");
+  }
   else if (ID == "decimal") {
     return toggleDecimalNumber();
   }
@@ -69,9 +76,31 @@ function appendNumber(number, digit) {
     number = Number(number + digit);
   }
   if (Math.abs(number) > MAX_NUMBER) return;
-  equation[editingNumber] = number;
   let commas = number.toLocaleString("en-US");
+  equation[editingNumber] = number;
+  equationText[editingNumber] = commas;
   screenNumber.textContent = commas;
+}
+
+function subtractNumber() {
+  let number = parseFloat(screenNumber.textContent.replace(/,/g, ""));
+  if (newEntry) {
+    number = 0;
+    decimal = false;
+    newEntry = false;
+  }
+  else if (decimal) {
+    if (decimalDigits) {
+      decimalDigits--;
+      number = Math.floor(number * 10 ** decimalDigits);
+      number /= 10 ** decimalDigits;
+    }
+    if (decimalDigits === 0) decimal = false;
+  }
+  else if (!decimal && number) {
+    number = Math.floor(number / 10);
+  }
+  screenNumber.textContent = number.toLocaleString("en-US");
 }
 
 function handleFunctions(button) {
@@ -84,11 +113,11 @@ function handleFunctions(button) {
     case "result" : solveEquation(); break;
     case "clearEntry" : clearEntry(); break;
     case "clearAll" : clearAll(); break;
-    case "backspace" : clearAll(); break;
-    case "percentage" : clearAll(); break;
-    case "divisor" : clearAll(); break;
-    case "power" : clearAll(); break;
-    case "root" : clearAll(); break;
+    case "backspace" : subtractNumber(); break;
+    case "percentage" : percentage(); break;
+    case "divisor" : divisor(); break;
+    case "power" : power(); break;
+    case "root" : squareRoot(); break;
   }
 }
 
@@ -101,6 +130,7 @@ function handleOperations(operation) {
     newEntry = true;
     decimal = false;
     equation[2] = Number(screenNumber.textContent);
+    equationText[2] = screenNumber.textContent.toLocaleString("en-US");
   }
   editingNumber = 2;
   let commas = equation[0].toLocaleString("en-US") + " " + equation[1];
@@ -112,18 +142,19 @@ function solveEquation() {
   newEntry = true;
   editingNumber = 0;
   if (equation[1] == undefined) {
-    screenEquation.textContent = equation[0] + " =";
+    screenEquation.textContent = equationText[0] + " =";
     screenNumber.textContent = equation[0];
     return addToHistory();
   }
-  screenEquation.textContent = equation[0].toLocaleString("en-US") + " " + equation[1] + " " + equation[2].toLocaleString("en-US") + " =";
+  screenEquation.textContent = equationText[0] + " " + equation[1] + " " + equationText[2] + " =";
   switch (equation[1]) {
     case "/": equation[0] = div(equation[0], equation[2]); break;
     case "*": equation[0] = mul(equation[0], equation[2]); break;
     case "+": equation[0] = add(equation[0], equation[2]); break;
     case "-": equation[0] = sub(equation[0], equation[2]); break;
   }
-  if (equation[0] === undefined) return clearAll();
+  if (equation[0] === undefined) return;
+  equationText[0] = equation[0];
   selectedOperator = "";
   screenNumber.textContent = equation[0].toLocaleString("en-US");
   addToHistory();
@@ -145,23 +176,89 @@ function addToHistory() {
 }
 
 function mul(a, b) {
-  if (a === undefined || b === undefined) return undefined;
+  if (a === undefined || b === undefined) { error = true; return undefined;}
+  const MAX_NUMBER_TO_MULTIPLY = MAX_NUMBER / Math.max(Math.abs(a), Math.abs(b));
+  if (MAX_NUMBER_TO_MULTIPLY < Math.min(Math.abs(a), Math.abs(b))) {
+    screenNumber.textContent = "Exceeds the maximum allowed number.";
+    error = true;
+    return undefined;
+  }
   return a * b;
 }
 
 function div(a, b) {
   if (a === undefined || b === undefined) return undefined;
+  if (b === 0) {
+    screenNumber.textContent = "Can't divide by zero.";
+    error = true;
+    return undefined;
+  }
+  const MAX_NUMBER_TO_MULTIPLY = MAX_NUMBER / Math.abs(a);
+  if (MAX_NUMBER_TO_MULTIPLY < Math.abs(1 / b)) {
+    screenNumber.textContent = "Exceeds the maximum allowed number.";
+    error = true;
+    return undefined;
+  }
   return a / b;
 }
 
 function add(a, b) {
   if (a === undefined || b === undefined) return undefined;
+  if (MAX_NUMBER < Math.abs(a + b)) {
+    screenNumber.textContent = "Exceeds the maximum allowed number.";
+    error = true;
+    return undefined;
+  }
   return a + b;
 }
 
 function sub(a, b) {
   if (a === undefined || b === undefined) return undefined;
+  if (MAX_NUMBER < Math.abs(a - b)) {
+    screenNumber.textContent = "Exceeds the maximum allowed number.";
+    error = true;
+    return undefined;
+  }
   return a - b;
+}
+
+function divisor() {
+  if (equation[editingNumber] === 0) {
+    screenNumber.textContent = "Can't divide by zero.";
+    error = true;
+    return;
+  }
+  equationText[editingNumber] = `1/(${equation[editingNumber]})`;
+  equation[editingNumber] = 1 / equation[editingNumber];
+  solveEquation();
+}
+
+function squareRoot() {
+  if (equation[editingNumber] < 0) {
+    screenNumber.textContent = "Invalid input.";
+    error = true;
+    return;
+  }
+  equationText[editingNumber] = `sqrt(${equation[editingNumber]})`;
+  equation[editingNumber] = Math.sqrt(equation[editingNumber]);
+  solveEquation();
+}
+
+function power() {
+  const MAX_NUMBER_SQRT = Math.sqrt(MAX_NUMBER);
+  if (equation[editingNumber] > MAX_NUMBER_SQRT) {
+    screenNumber.textContent = "Exceeds the maximum allowed number.";
+    error = true;
+    return;
+  }
+  equationText[editingNumber] = `pow(${equation[editingNumber]})`;
+  equation[editingNumber] = Math.pow(equation[editingNumber], 2);
+  solveEquation();
+}
+
+function percentage() {
+  equationText[editingNumber] = equation[editingNumber] /= 100;
+  solveEquation();
 }
 
 function clearAll() {
@@ -173,6 +270,7 @@ function clearAll() {
   decimal = false;
   decimalDigits = 0;
   newEntry = false;
+  error = false;
 }
 
 function clearEntry() {
@@ -189,12 +287,20 @@ function loadFromHistory(event) {
   if (section === undefined) return;
   screenEquation.textContent = section.firstChild.textContent;
   screenNumber.textContent = section.lastChild.textContent;
-  equation = section.firstChild.textContent.split(" ");
+  equationText = section.firstChild.textContent.split(" ");
   equation[0] = parseFloat(screenNumber.textContent.replace(/,/g, ""));
-  equation[2] = parseFloat(equation[2].replace(/,/g, ""));
-  equation.pop();
+  equationText[0] = equation[0];
+  equation[1] = (equationText[1] === '=') ? undefined : equationText[1];
+  equation[2] = extractNumber(equationText[2]);
+  equationText.pop();
   selectedOperator = "";
   newEntry = true;
   editingNumber = 0;
   decimal = false;
+}
+
+function extractNumber(string) {
+  if (string === undefined) return 0;
+  if (string[0] >= '0' && string[0] <= '9') return parseFloat(string.replace(/,/g, ""));
+  return parseFloat(string.substring(string.indexOf('(') + 1, string.indexOf(')')).replace(/,/g, ""));
 }
