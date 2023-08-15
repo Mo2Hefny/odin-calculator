@@ -69,8 +69,11 @@ function appendNumber(number, digit) {
   if (Math.abs(number) > MAX_NUMBER) return;
   if (decimal && decimalDigits >= MAX_DECIMALS) return;
   if (decimal) {
-    number = Number(screenNumber.textContent + digit);
+    screenNumber.textContent += digit;
     decimalDigits++;
+    equation[editingNumber] = Number(screenNumber.textContent);
+    equationText[editingNumber] = screenNumber.textContent;
+    return;
   }
   else {
     number = Number(number + digit);
